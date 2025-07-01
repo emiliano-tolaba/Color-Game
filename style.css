@@ -1,0 +1,278 @@
+*
+{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/*
+*
+{
+    outline: 1px solid red;
+}*/
+
+body
+{
+    margin: 0px;
+    background-color: #1E2019;
+    text-align: center;
+}
+
+html, body              /*ocupa el alto total de la pantalla*/
+{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+main
+{
+    flex: 1;
+}
+
+
+/* ********************************** HEADER ******************************************* */
+
+#encabezado
+{
+    font-family: "Bungee Shade", sans-serif;
+    background-color: #1C7293;
+    color: black;
+    padding: 25px 0;
+    font-size: 1.5rem;
+}
+
+#encabezado h2
+{
+    margin: 0;
+}
+
+.texto-rgb
+{
+    animation: efecto-rgb 10s infinite linear;
+}
+
+
+/* ********************************** NAV ******************************************* */
+
+#menu-opciones
+{   
+    background-color: #E8EEF2;
+    color: #1C7293;
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    list-style-type: none;
+    gap: 5px;
+    height: 35px;
+}
+
+#menu-opciones li
+{
+    display: flex;
+}
+
+button
+{
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: transparent;
+    border: none;
+    font-family: "Audiowide", sans-serif;
+    color: #1C7293;
+    font-size: 1.2rem;
+    transition: all 0.1s ease-in-out;
+}
+
+button:hover
+{
+    transform: scale(1.1);
+    background-color: #1C7293;
+    color: #E8EEF2;
+}
+
+#btn-play
+{
+    margin-right: 60px;
+}
+
+.btn-desactivado
+{
+    opacity: 0.5;
+    cursor: default;
+    pointer-events: none; /* bloquea hover y clicks */
+    transition: none;
+}
+
+
+/* ********************************** MAIN ******************************************* */
+
+#container-squares
+{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 5% 30% 4% 32%;
+}
+
+
+
+#reglas
+{
+    
+    font-family: "Audiowide", sans-serif;
+    background-color: #1C7293;
+    color: #E8EEF2;
+    margin: 4% 30%;
+    padding: 3% 2%;
+    border-radius: 5%;
+    
+}
+
+.square
+{
+    display: none;
+    width: 180px;
+    height: 180px;
+    border-radius: 10%;
+}
+
+.square.visibilizar
+{
+    animation: aparecer 0.5s ease-out forwards;       /*Separado en una clase para manejarlo dinámicamente con JS*/
+}
+
+.square.expandir
+{
+    animation: expandir 0.5s ease-in-out forwards;
+}
+
+
+/* ********************************** FOOTER ******************************************* */
+
+#footer
+{    
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;    
+    align-items: center;
+    
+    padding: 0.5% 25%;
+
+    background-color:  #1C7293;
+    color: #E8EEF2;
+    font-family: "Audiowide", sans-serif;
+    font-size: 1.0rem;
+}
+
+
+#links
+{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+}
+
+a, #links img
+{
+    width: 36px;
+    height: 36px;
+}
+
+/* ********************************** KEYFRAMES ******************************************* */
+
+@keyframes efecto-rgb
+{
+    0%   { color: red; }
+    25%  { color: lime; }
+    50%  { color: blue; }
+    75%  { color: magenta; }
+    100% { color: chocolate; }
+}
+
+@keyframes aparecer
+{
+    0% {opacity: 0.0;}
+    50% {opacity: 0.6;}
+    100% {opacity: 1.0;}
+}
+
+@keyframes expandir
+{
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.2);}
+    70%  { transform: scale(0.9);}
+    100% { transform: scale(1);}
+}
+
+
+/* ********************************** MEDIA QUERIES ******************************************* */
+
+@media (max-width: 1024px)
+{
+    #container-squares
+    {
+        padding: 3% 20%;
+    }
+}
+
+@media(max-width: 768px)
+{
+    #container-squares
+    {
+        padding: 8% 20%;
+    }
+
+    .square
+    {
+        width: 120px;
+        height: 120px;
+    }
+
+    #footer
+    {
+        padding: 1% 0%;
+    }
+
+    #reglas
+    {
+        margin: 4% 15%;
+        padding: 3% 5%;
+    }
+}
+
+@media(max-width: 480px)
+{
+
+    #encabezado, button
+    {
+        font-size: 1.0rem;
+    }
+
+    #footer
+    {
+        padding: 1% 1%;
+    }
+
+    #container-squares
+    {
+        padding: 20% 6%;
+    }
+
+    .square
+    {
+        width: 100px;
+        height: 100px;
+    }
+
+    #reglas
+    {
+        font-size: 0.8rem;
+        margin: 15% 5% 0% 5%;
+        padding: 3% 5%;
+    }
+}
