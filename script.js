@@ -23,12 +23,12 @@ const elementos =                       // elementos agrupados para un código m
     btnEasy: document.getElementById("btn-easy"),
     btnHard: document.getElementById("btn-hard"),
     btnPlay: document.getElementById("btn-play"),
-    colorGanador: document.getElementById("colorGanador"),
+    colorGanador: document.getElementById("colorGanador"),          // color que debe escoger el usuario para ganar
 }
 
 let dificultadElegida;                                              // dificultad elegida por el usuario
 let juegoIniciado = false;
-let indiceGanador;
+let indiceGanador = -1;
 
 dificultades.forEach(dificultad =>                   // Asigna a cada btn de dificultad un evento (que configurará el juego según la dificultad elegida)
 {
@@ -65,6 +65,26 @@ elementos.btnPlay.addEventListener("click", ()=>
     
 });
 
+elementos.cuadrados.forEach((cuadrado, index) =>
+{
+    cuadrado.addEventListener("click", ()=>
+    {
+        if(indiceGanador != -1)
+        {
+            if(index == indiceGanador)
+            {
+                console.log("Ganaste!");
+            }
+            else
+            {
+                
+                console.log("Color incorrecto");
+            }
+        }
+    });    
+});
+
+
 
 
 function iniciarJuego(config)
@@ -97,6 +117,7 @@ function reiniciarJuego()
     reactivarBtnsDificultad();
 
     elementos.btnPlay.textContent = "PLAY";
+    indiceGanador = -1;
 }
 
 
@@ -191,9 +212,9 @@ function asignarColores(cantidad)
     }
 }
 
-function mostrarRgb(cantidad)// revisar esta funcion
+function mostrarRgb(cantidad)
 {
-    let colorGanador = seleccionarColorGanador(cantidad); // ver esto
+    let colorGanador = seleccionarColorGanador(cantidad);
     
     elementos.colorGanador.textContent = colorGanador;
 }
@@ -233,7 +254,10 @@ function resetearAnimaciones(animaciones)
 
 function seleccionarColorGanador(cantidadCuadrados)
 {
-    indiceGanador = generarEnteroAleatorio(0, cantidadCuadrados-1); // ver esto
-
-    return elementos.cuadrados[indiceGanador].style.backgroundColor;
+    let index = generarEnteroAleatorio(0, cantidadCuadrados-1);
+    let colorRgb = elementos.cuadrados[index].style.backgroundColor;
+    
+    indiceGanador = index;    // guarda el indice ganador en la variable global
+    
+    return colorRgb;
 }
