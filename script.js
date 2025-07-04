@@ -44,8 +44,6 @@ dificultades.forEach(dificultad =>                   // Asigna a cada btn de dif
         reactivarBtnsDificultad();
         desactivarBtnDificultad(dificultad.idBtn);
     });
-
-    
 });
 
 elementos.btnPlay.addEventListener("click", ()=>
@@ -74,9 +72,18 @@ elementos.cuadrados.forEach((cuadrado, index) =>
             if(index == indiceGanador)
             {
                 console.log("Ganaste!");
+
+
             }
             else
             {
+                aplicarAnimacion(elementos.cuadrados[index], "expandir");
+
+                setTimeout(()=>
+                {    
+                    elementos.cuadrados[index].style.visibility = "hidden";
+                }, 500);
+
                 
                 console.log("Color incorrecto");
             }
@@ -184,6 +191,7 @@ function mostrarCuadrados(cantidad)
     for(let i=0; i<cantidad; i++)
     {
         elementos.cuadrados[i].style.display = "flex";
+        elementos.cuadrados[i].style.visibility = "visible";
 
         aplicarAnimacion(elementos.cuadrados[i], "visibilizar");
         
@@ -260,4 +268,9 @@ function seleccionarColorGanador(cantidadCuadrados)
     indiceGanador = index;    // guarda el indice ganador en la variable global
     
     return colorRgb;
+}
+
+function ocultarCuadrado()
+{
+
 }
