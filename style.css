@@ -142,7 +142,7 @@ button:hover
 
 .square.visibilizar
 {
-    animation: aparecer 0.5s ease-out forwards;       /*Separado en una clase para manejarlo dinámicamente con JS*/
+    animation: aparecer 1.0s ease-out forwards;       /*Separado en una clase para manejarlo dinámicamente con JS*/
 }
 
 .square.expandir

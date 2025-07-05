@@ -16,6 +16,15 @@ const dificultades =
     }
 ]
 
+const estadoJuego =
+{
+    iniciado: false,
+    dificultad: null,
+    config: null,
+    indiceGanador: -1,
+    rondaGanada: false,
+}
+
 const elementos =                       // elementos agrupados para un código más prolijo
 {
     cuadrados: Array.from(document.querySelectorAll(".square")),   // selecciona los cuadrados y los guarda en una nodelist                  // transforma la nodeList en un array
@@ -26,15 +35,12 @@ const elementos =                       // elementos agrupados para un código m
     colorGanador: document.getElementById("colorGanador"),          // color que debe escoger el usuario para ganar
 }
 
-let dificultadElegida;                                              // dificultad elegida por el usuario
-let juegoIniciado = false;
-let indiceGanador = -1;
 
 dificultades.forEach(dificultad =>                   // Asigna a cada btn de dificultad un evento (que configurará el juego según la dificultad elegida)
 {
     document.getElementById(dificultad.idBtn).addEventListener("click", ()=>
     {
-        dificultadElegida = dificultad.nombre;
+        estadoJuego.dificultad = dificultad.nombre;
         elementos.btnPlay.classList.remove("btn-desactivado");
 
         ocultarReglas();
@@ -48,17 +54,17 @@ dificultades.forEach(dificultad =>                   // Asigna a cada btn de dif
 
 elementos.btnPlay.addEventListener("click", ()=>
 {
-    if(!juegoIniciado)
+    if(!estadoJuego.iniciado)
     {        
-        const config = dificultades.find(d => d.nombre === dificultadElegida);      // busca la dificultad que seleccionó el usuario y guarda la referencia en otro objeto
+        estadoJuego.config = dificultades.find(d => d.nombre === estadoJuego.dificultad);      // busca la dificultad que seleccionó el usuario y guarda la referencia en otro objeto
         
-        iniciarJuego(config);
-        juegoIniciado = true;   
+        iniciarJuego(estadoJuego.config);
+        estadoJuego.iniciado = true;   
     }
     else
     {
         reiniciarJuego();
-        juegoIniciado = false;
+        estadoJuego.iniciado = false;
     }
     
 });
@@ -67,25 +73,19 @@ elementos.cuadrados.forEach((cuadrado, index) =>
 {
     cuadrado.addEventListener("click", ()=>
     {
-        if(indiceGanador != -1)
+        if(estadoJuego.indiceGanador != -1 && !estadoJuego.rondaGanada)
         {
-            if(index == indiceGanador)
+            if(index == estadoJuego.indiceGanador)
             {
-                console.log("Ganaste!");
+                console.log("Ganaste!");        // borrar esto después
 
-
+                mostrarAnimacionVictoria(index);
             }
             else
             {
-                aplicarAnimacion(elementos.cuadrados[index], "expandir");
+                desaparecerCuadrado(index);
 
-                setTimeout(()=>
-                {    
-                    elementos.cuadrados[index].style.visibility = "hidden";
-                }, 500);
-
-                
-                console.log("Color incorrecto");
+                console.log("Color incorrecto");        // borrar esto después
             }
         }
     });    
@@ -113,7 +113,12 @@ function iniciarJuego(config)
 
 function reiniciarJuego()
 {
-    dificultadElegida = null;       // reestablece la dificultad
+    estadoJuego.dificultad = null;      // reseteo del objeto
+    estadoJuego.config = null;
+    estadoJuego.iniciado = false;
+    estadoJuego.indiceGanador = -1;
+    estadoJuego.rondaGanada = false;
+
     elementos.btnPlay.classList.add("btn-desactivado");
 
     mostrarBotonesDificultad();
@@ -124,7 +129,7 @@ function reiniciarJuego()
     reactivarBtnsDificultad();
 
     elementos.btnPlay.textContent = "PLAY";
-    indiceGanador = -1;
+    estadoJuego.indiceGanador = -1;
 }
 
 
@@ -265,12 +270,31 @@ function seleccionarColorGanador(cantidadCuadrados)
     let index = generarEnteroAleatorio(0, cantidadCuadrados-1);
     let colorRgb = elementos.cuadrados[index].style.backgroundColor;
     
-    indiceGanador = index;    // guarda el indice ganador en la variable global
+    estadoJuego.indiceGanador = index;    // guarda el indice ganador en el objeto global
     
     return colorRgb;
 }
 
-function ocultarCuadrado()
+function mostrarAnimacionVictoria(indiceGanador)
 {
+    resetearAnimaciones(["expandir", "visibilizar"]);
 
+    for(let i=0; i<estadoJuego.config.cantidadCuadrados; i++)    // este es el for que te digo
+    {
+        elementos.cuadrados[i].style.visibility = "visible";
+        elementos.cuadrados[i].style.backgroundColor = elementos.cuadrados[indiceGanador].style.backgroundColor;    
+        aplicarAnimacion(elementos.cuadrados[i], "visibilizar");    
+    }
+    
+    estadoJuego.rondaGanada = true;
+}
+
+function desaparecerCuadrado(indexCuadrado)
+{
+    aplicarAnimacion(elementos.cuadrados[indexCuadrado], "expandir");
+
+    setTimeout(()=>
+    {    
+        elementos.cuadrados[indexCuadrado].style.visibility = "hidden";
+    }, 500);
 }
