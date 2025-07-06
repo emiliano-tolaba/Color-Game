@@ -92,9 +92,14 @@ button:hover
     color: #E8EEF2;
 }
 
-#btn-play
+#mensaje
 {
-    margin-right: 60px;
+    display: flex;
+    align-items: center;
+    margin: 0px 2%;
+    font-family: "Audiowide", sans-serif;
+    
+    color: black;
 }
 
 .btn-desactivado
@@ -140,12 +145,12 @@ button:hover
     border-radius: 10%;
 }
 
-.square.visibilizar
+.visibilizar
 {
     animation: aparecer 1.0s ease-out forwards;       /*Separado en una clase para manejarlo dinámicamente con JS*/
 }
 
-.square.expandir
+.expandir
 {
     animation: expandir 0.5s ease-in-out forwards;
 }

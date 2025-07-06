@@ -5,14 +5,14 @@ const dificultades =
         idBtn: "btn-easy",
         tiempo: 15,
         cantidadCuadrados: 3,
-        erroresPermitidos: 2,
+        erroresPermitidos: 1,
     },
     {
         nombre: "hard",
         idBtn: "btn-hard",
         tiempo: 10,
         cantidadCuadrados: 6,
-        erroresPermitidos: 5,
+        erroresPermitidos: 4,
     }
 ]
 
@@ -23,6 +23,7 @@ const estadoJuego =
     config: null,
     indiceGanador: -1,
     rondaGanada: false,
+    contadorRondasGanadas: 0,
 }
 
 const elementos =                       // elementos agrupados para un código más prolijo
@@ -32,6 +33,7 @@ const elementos =                       // elementos agrupados para un código m
     btnEasy: document.getElementById("btn-easy"),
     btnHard: document.getElementById("btn-hard"),
     btnPlay: document.getElementById("btn-play"),
+    mensaje: document.getElementById("mensaje"),
     colorGanador: document.getElementById("colorGanador"),          // color que debe escoger el usuario para ganar
 }
 
@@ -76,16 +78,33 @@ elementos.cuadrados.forEach((cuadrado, index) =>
         if(estadoJuego.indiceGanador != -1 && !estadoJuego.rondaGanada)
         {
             if(index == estadoJuego.indiceGanador)
-            {
-                console.log("Ganaste!");        // borrar esto después
+            {                
+                mostrarAnimacionRondaGanada(index);
 
-                mostrarAnimacionVictoria(index);
+                estadoJuego.contadorRondasGanadas++;
+                estadoJuego.rondaGanada = true;
+                estadoJuego.config.erroresPermitidos = 0; // a revisar
+
+                console.log("Rondas ganadas: " + estadoJuego.contadorRondasGanadas); // borrar esto despues
             }
             else
             {
-                desaparecerCuadrado(index);
+                if(estadoJuego.config.erroresPermitidos == 0)   // continuar aca
+                {
+                    console.log("Gamer over");
+                }
+                else
+                {
+                    desaparecerCuadrado(index);
 
-                console.log("Color incorrecto");        // borrar esto después
+                    modificarTextContent(elementos.mensaje, "Try again");
+                    aplicarAnimacion(elementos.mensaje, "expandir");
+                    elementos.mensaje.style.color = "red";
+
+                    estadoJuego.config.erroresPermitidos--;
+
+                    console.log("Errores permitidos: " + estadoJuego.config.erroresPermitidos);
+                }
             }
         }
     });    
@@ -98,16 +117,14 @@ function iniciarJuego(config)
 {
     for(let i=0; i<config.cantidadCuadrados; i++)
     {
-        
-        aplicarAnimacion(elementos.cuadrados[i], "expandir");
-        
+        aplicarAnimacion(elementos.cuadrados[i], "expandir");   
     }
         
         ocultarBotonesDificultad(config.nombre);
         desactivarBtnDificultad(config.idBtn);
         mostrarRgb(config.cantidadCuadrados);
         
-        elementos.btnPlay.textContent = "VOLVER";
+        modificarTextContent(elementos.btnPlay, "BACK");
 
 }
 
@@ -128,7 +145,10 @@ function reiniciarJuego()
     mostrarReglas();
     reactivarBtnsDificultad();
 
-    elementos.btnPlay.textContent = "PLAY";
+    modificarTextContent(elementos.mensaje, "Good luck!");
+    modificarTextContent(elementos.btnPlay, "PLAY");
+    elementos.mensaje.style.color = "black";
+
     estadoJuego.indiceGanador = -1;
 }
 
@@ -196,10 +216,8 @@ function mostrarCuadrados(cantidad)
     for(let i=0; i<cantidad; i++)
     {
         elementos.cuadrados[i].style.display = "flex";
-        elementos.cuadrados[i].style.visibility = "visible";
-
         aplicarAnimacion(elementos.cuadrados[i], "visibilizar");
-        
+        elementos.cuadrados[i].style.visibility = "visible";        
     }
 }
 
@@ -229,12 +247,12 @@ function mostrarRgb(cantidad)
 {
     let colorGanador = seleccionarColorGanador(cantidad);
     
-    elementos.colorGanador.textContent = colorGanador;
+    modificarTextContent(elementos.colorGanador, colorGanador);
 }
 
 function limpiarColorRgb()
 {
-    elementos.colorGanador.textContent = "RGB()";
+    modificarTextContent(elementos.colorGanador, "RGB()");
 }
 
 function limpiarColores()
@@ -275,7 +293,7 @@ function seleccionarColorGanador(cantidadCuadrados)
     return colorRgb;
 }
 
-function mostrarAnimacionVictoria(indiceGanador)
+function mostrarAnimacionRondaGanada(indiceGanador)
 {
     resetearAnimaciones(["expandir", "visibilizar"]);
 
@@ -285,9 +303,14 @@ function mostrarAnimacionVictoria(indiceGanador)
         elementos.cuadrados[i].style.backgroundColor = elementos.cuadrados[indiceGanador].style.backgroundColor;    
         aplicarAnimacion(elementos.cuadrados[i], "visibilizar");    
     }
-    
-    estadoJuego.rondaGanada = true;
+
+    elementos.mensaje.style.color = "green";
+    modificarTextContent(elementos.mensaje, "Well done!");
+    aplicarAnimacion(elementos.mensaje, "expandir");
 }
+
+
+
 
 function desaparecerCuadrado(indexCuadrado)
 {
@@ -298,3 +321,9 @@ function desaparecerCuadrado(indexCuadrado)
         elementos.cuadrados[indexCuadrado].style.visibility = "hidden";
     }, 500);
 }
+
+function modificarTextContent(elemento, texto)
+{
+    elemento.textContent = texto;
+}
+
