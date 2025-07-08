@@ -145,14 +145,22 @@ button:hover
     border-radius: 10%;
 }
 
+/* ********************************** ANIMACIONES ******************************************* */
+/*Separadas en una clase para manejarlo dinámicamente con JS*/
+
 .visibilizar
 {
-    animation: aparecer 1.0s ease-out forwards;       /*Separado en una clase para manejarlo dinámicamente con JS*/
+    animation: aparecer 1.0s ease-out forwards;       
 }
 
 .expandir
 {
     animation: expandir 0.5s ease-in-out forwards;
+}
+
+.sacudir
+{
+    animation: sacudir 0.4s ease;
 }
 
 
@@ -212,6 +220,15 @@ a, #links img
     40%  { transform: scale(1.2);}
     70%  { transform: scale(0.9);}
     100% { transform: scale(1);}
+}
+
+@keyframes sacudir
+{
+    0%   { transform: translateX(0); }
+    25%  { transform: translateX(-5px); }
+    50%  { transform: translateX(5px); }
+    75%  { transform: translateX(-5px); }
+    100% { transform: translateX(0); }    
 }
 
 

@@ -24,6 +24,7 @@ const estadoJuego =
     indiceGanador: -1,
     rondaGanada: false,
     contadorRondasGanadas: 0,
+    contadorErrores: 0,
 }
 
 const elementos =                       // elementos agrupados para un código más prolijo
@@ -79,31 +80,34 @@ elementos.cuadrados.forEach((cuadrado, index) =>
         {
             if(index == estadoJuego.indiceGanador)
             {                
-                mostrarAnimacionRondaGanada(index);
+                finalizarRondaGanada(index);
 
-                estadoJuego.contadorRondasGanadas++;
                 estadoJuego.rondaGanada = true;
-                estadoJuego.config.erroresPermitidos = 0; // a revisar
+                estadoJuego.contadorRondasGanadas++;
 
                 console.log("Rondas ganadas: " + estadoJuego.contadorRondasGanadas); // borrar esto despues
             }
             else
             {
-                if(estadoJuego.config.erroresPermitidos == 0)   // continuar aca
+                if(estadoJuego.contadorErrores == estadoJuego.config.erroresPermitidos)   // continuar aca
                 {
                     console.log("Gamer over");
+                    modificarTextContent(elementos.mensaje, "Game over");
+                    resetearAnimaciones([elementos.mensaje], ["expandir","sacudir"]);
+                    aplicarAnimacion(elementos.mensaje, "sacudir");
                 }
                 else
                 {
                     desaparecerCuadrado(index);
-
+                    
                     modificarTextContent(elementos.mensaje, "Try again");
-                    aplicarAnimacion(elementos.mensaje, "expandir");
+                    aplicarAnimacion(elementos.mensaje, "sacudir");
                     elementos.mensaje.style.color = "red";
 
-                    estadoJuego.config.erroresPermitidos--;
+                    estadoJuego.contadorErrores++;
 
-                    console.log("Errores permitidos: " + estadoJuego.config.erroresPermitidos);
+                    console.log("Contador de errores: " + estadoJuego.contadorErrores);
+                    console.log("Errores en esta dificultad: " + estadoJuego.config.erroresPermitidos);
                 }
             }
         }
@@ -130,11 +134,12 @@ function iniciarJuego(config)
 
 function reiniciarJuego()
 {
-    estadoJuego.dificultad = null;      // reseteo del objeto
+    estadoJuego.iniciado = false;       // reseteo del objeto
+    estadoJuego.dificultad = null;      
     estadoJuego.config = null;
-    estadoJuego.iniciado = false;
     estadoJuego.indiceGanador = -1;
     estadoJuego.rondaGanada = false;
+    estadoJuego.contadorErrores = 0;
 
     elementos.btnPlay.classList.add("btn-desactivado");
 
@@ -211,7 +216,7 @@ function ocultarCuadrados()
 
 function mostrarCuadrados(cantidad)
 {
-    resetearAnimaciones(["expandir", "visibilizar"]);
+    resetearAnimaciones(elementos.cuadrados, ["expandir", "visibilizar"]);
 
     for(let i=0; i<cantidad; i++)
     {
@@ -270,16 +275,16 @@ function aplicarAnimacion(elemento, animacion)
     elemento.classList.add(animacion);
 }
 
-function resetearAnimaciones(animaciones)
+function resetearAnimaciones(elementos, animaciones)
 {
-    elementos.cuadrados.forEach(cuadrado =>
+    elementos.forEach(element =>
     {
         animaciones.forEach(animacion =>
         {
-            cuadrado.classList.remove(animacion);
+            element.classList.remove(animacion);
         });
 
-        cuadrado.offsetWidth; // Forzamos reflow para garantizar que el DOM registre los cambios
+        element.offsetWidth; // Forzamos reflow para garantizar que el DOM registre los cambios
     });
 }
 
@@ -293,11 +298,11 @@ function seleccionarColorGanador(cantidadCuadrados)
     return colorRgb;
 }
 
-function mostrarAnimacionRondaGanada(indiceGanador)
+function finalizarRondaGanada(indiceGanador)
 {
-    resetearAnimaciones(["expandir", "visibilizar"]);
+    resetearAnimaciones(elementos.cuadrados, ["expandir", "visibilizar"]);
 
-    for(let i=0; i<estadoJuego.config.cantidadCuadrados; i++)    // este es el for que te digo
+    for(let i=0; i<estadoJuego.config.cantidadCuadrados; i++)
     {
         elementos.cuadrados[i].style.visibility = "visible";
         elementos.cuadrados[i].style.backgroundColor = elementos.cuadrados[indiceGanador].style.backgroundColor;    
@@ -306,6 +311,7 @@ function mostrarAnimacionRondaGanada(indiceGanador)
 
     elementos.mensaje.style.color = "green";
     modificarTextContent(elementos.mensaje, "Well done!");
+    resetearAnimaciones([elementos.mensaje], ["expandir", "sacudir"]);
     aplicarAnimacion(elementos.mensaje, "expandir");
 }
 
