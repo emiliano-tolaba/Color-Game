@@ -22,7 +22,7 @@ const estadoJuego =
     dificultad: null,
     config: null,
     indiceGanador: -1,
-    rondaGanada: false,
+    rondaFinalizada: false,
     contadorRondasGanadas: 0,
     contadorErrores: 0,
 }
@@ -51,7 +51,7 @@ dificultades.forEach(dificultad =>                   // Asigna a cada btn de dif
         asignarColores(dificultad.cantidadCuadrados);
         mostrarCuadrados(dificultad.cantidadCuadrados);
         reactivarBtnsDificultad();
-        desactivarBtnDificultad(dificultad.idBtn);
+        desactivarBtn(dificultad.idBtn);
     });
 });
 
@@ -76,44 +76,68 @@ elementos.cuadrados.forEach((cuadrado, index) =>
 {
     cuadrado.addEventListener("click", ()=>
     {
-        if(estadoJuego.indiceGanador != -1 && !estadoJuego.rondaGanada)
+        if(estadoJuego.indiceGanador != -1 && !estadoJuego.rondaFinalizada)
         {
             if(index == estadoJuego.indiceGanador)
             {                
+                estadoJuego.rondaFinalizada = true;     // impide spamear los cuadrados hasta que se muestren los nuevos
+                
                 finalizarRondaGanada(index);
-
-                estadoJuego.rondaGanada = true;
+                
                 estadoJuego.contadorRondasGanadas++;
 
                 console.log("Rondas ganadas: " + estadoJuego.contadorRondasGanadas); // borrar esto despues
+
+                if(estadoJuego.contadorRondasGanadas == 3)
+                {
+                    console.log("Rata bailando");
+                    estadoJuego.rondaFinalizada = true;
+                    estadoJuego.contadorRondasGanadas = 0;
+                }
+                else
+                {
+                    setTimeout(()=>
+                    {
+                        reiniciarRonda();
+                        asignarColores(estadoJuego.config.cantidadCuadrados);
+                        mostrarCuadrados(estadoJuego.config.cantidadCuadrados);
+                        mostrarRgb(estadoJuego.config.cantidadCuadrados);
+                    }, 2000);
+                }
+                
             }
             else
             {
                 if(estadoJuego.contadorErrores == estadoJuego.config.erroresPermitidos)   // continuar aca
                 {
-                    console.log("Gamer over");
-                    modificarTextContent(elementos.mensaje, "Game over");
-                    resetearAnimaciones([elementos.mensaje], ["expandir","sacudir"]);
-                    aplicarAnimacion(elementos.mensaje, "sacudir");
+                    estadoJuego.rondaFinalizada = true;
+                    estadoJuego.contadorRondasGanadas = 0;                    
+
+                    finalizarJuego();
+
                 }
                 else
                 {
-                    desaparecerCuadrado(index);
-                    
+                    estadoJuego.rondaFinalizada = true;
+                    desaparecerCuadrado(index);                    
                     modificarTextContent(elementos.mensaje, "Try again");
                     aplicarAnimacion(elementos.mensaje, "sacudir");
                     elementos.mensaje.style.color = "red";
-
                     estadoJuego.contadorErrores++;
 
-                    console.log("Contador de errores: " + estadoJuego.contadorErrores);
-                    console.log("Errores en esta dificultad: " + estadoJuego.config.erroresPermitidos);
+                    setTimeout(()=>
+                    {    
+                        estadoJuego.rondaFinalizada = false;        // inhibe clickear un cuadrado para no spamearlo
+                    }, 500);
+                    
+
+                    console.log("Contador de errores: " + estadoJuego.contadorErrores);     // borrar
+                    console.log("Errores permitidos en esta dificultad: " + estadoJuego.config.erroresPermitidos);  // borrar
                 }
             }
         }
     });    
 });
-
 
 
 
@@ -125,40 +149,48 @@ function iniciarJuego(config)
     }
         
         ocultarBotonesDificultad(config.nombre);
-        desactivarBtnDificultad(config.idBtn);
+        desactivarBtn(config.idBtn);
         mostrarRgb(config.cantidadCuadrados);
         
         modificarTextContent(elementos.btnPlay, "BACK");
 
 }
 
+
+
 function reiniciarJuego()
 {
-    estadoJuego.iniciado = false;       // reseteo del objeto
+    reiniciarRonda();               // reseteo del objeto
+    estadoJuego.iniciado = false;       
     estadoJuego.dificultad = null;      
     estadoJuego.config = null;
-    estadoJuego.indiceGanador = -1;
-    estadoJuego.rondaGanada = false;
-    estadoJuego.contadorErrores = 0;
-
     elementos.btnPlay.classList.add("btn-desactivado");
 
     mostrarBotonesDificultad();
+    mostrarReglas();
+    reactivarBtnsDificultad();
+    modificarTextContent(elementos.btnPlay, "PLAY");
+
+
+}
+
+function reiniciarRonda()
+{
+    estadoJuego.indiceGanador = -1;
+    estadoJuego.contadorErrores = 0;
+    estadoJuego.rondaFinalizada = false;
+
     ocultarCuadrados();
     limpiarColores();
     limpiarColorRgb()
-    mostrarReglas();
-    reactivarBtnsDificultad();
 
     modificarTextContent(elementos.mensaje, "Good luck!");
-    modificarTextContent(elementos.btnPlay, "PLAY");
     elementos.mensaje.style.color = "black";
 
-    estadoJuego.indiceGanador = -1;
 }
 
 
-function desactivarBtnDificultad(idBtn)
+function desactivarBtn(idBtn)
 {
     const btnSeleccionado = document.getElementById(idBtn);
 
@@ -315,7 +347,12 @@ function finalizarRondaGanada(indiceGanador)
     aplicarAnimacion(elementos.mensaje, "expandir");
 }
 
-
+function finalizarJuego()
+{
+    modificarTextContent(elementos.mensaje, "Game over");
+    resetearAnimaciones([elementos.mensaje], ["expandir","sacudir"]);
+    aplicarAnimacion(elementos.mensaje, "sacudir");
+}
 
 
 function desaparecerCuadrado(indexCuadrado)
