@@ -8,7 +8,9 @@
 *
 {
     outline: 1px solid red;
-}*/
+}
+*/
+
 
 body
 {
@@ -123,8 +125,6 @@ button:hover
     padding: 5% 30% 4% 32%;
 }
 
-
-
 #reglas
 {
     
@@ -144,6 +144,17 @@ button:hover
     height: 180px;
     border-radius: 10%;
 }
+
+#container-recompensa
+{
+    display: none;
+}
+
+#container-recompensa h1
+{
+    font-family: "Bungee Shade", sans-serif;
+}
+
 
 /* ********************************** ANIMACIONES ******************************************* */
 /*Separadas en una clase para manejarlo dinámicamente con JS*/
