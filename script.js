@@ -58,7 +58,7 @@ dificultades.forEach(dificultad =>                   // Asigna a cada btn de dif
         estadoJuego.dificultad = dificultad.nombre;
         elementos.btnPlay.classList.remove("btn-desactivado");
 
-        ocultarElemento(elementos.reglas);
+        setDisplay(elementos.reglas, "none");
         ocultarCuadrados();
         asignarColores(dificultad.cantidadCuadrados);
         mostrarCuadrados(dificultad.cantidadCuadrados);
@@ -70,15 +70,13 @@ dificultades.forEach(dificultad =>                   // Asigna a cada btn de dif
 elementos.btnPlay.addEventListener("click", ()=>
 {
     if(!estadoJuego.iniciado)
-    {        
-        estadoJuego.iniciado = true;   
+    {            
         estadoJuego.config = dificultades.find(d => d.nombre === estadoJuego.dificultad);      // busca la dificultad que seleccionó el usuario y guarda la referencia en otro objeto
         
         iniciarJuego(estadoJuego.config);
     }
     else
-    {
-        estadoJuego.iniciado = false;
+    {        
         reiniciarJuego();
     }
     
@@ -121,6 +119,8 @@ elementos.cuadrados.forEach((cuadrado, index) =>
 
 function iniciarJuego(config)
 {
+    estadoJuego.iniciado = true;   
+
     fx.start.play();
 
     for(let i=0; i<config.cantidadCuadrados; i++)
@@ -138,13 +138,14 @@ function iniciarJuego(config)
 function reiniciarJuego()
 {
     reiniciarRonda();               
+    estadoJuego.iniciado = false;
     estadoJuego.dificultad = null;  // reseteo del objeto           
     estadoJuego.config = null;
     estadoJuego.contadorRondasGanadas = 0;
     elementos.btnPlay.classList.add("btn-desactivado");
-    elementos.containerCuadrados.style.display = "flex";
+    setDisplay(elementos.containerCuadrados, "flex");    
     
-    ocultarElemento(elementos.containerRecompensa);
+    setDisplay(elementos.containerRecompensa, "none");
     
     fx.victoria.pause();
     fx.victoria.currentTime = 0;
@@ -195,8 +196,8 @@ function mostrarRecompensa()
     
     setTimeout(()=>
     {
-        ocultarElemento(elementos.containerCuadrados);
-        elementos.containerRecompensa.style.display = "block";                
+        setDisplay(elementos.containerCuadrados, "none");
+        setDisplay(elementos.containerRecompensa);                     
         aplicarAnimacion(elementos.containerRecompensa, "visibilizar");
     }, 2300);
 }
@@ -226,7 +227,7 @@ function registrarRondaGanada(indiceGanador)
 
     for(let i=0; i<estadoJuego.config.cantidadCuadrados; i++)
     {
-        elementos.cuadrados[i].style.visibility = "visible";
+        cambiarVisibilidadElemento(elementos.cuadrados[i], "visible")        
         elementos.cuadrados[i].style.backgroundColor = elementos.cuadrados[indiceGanador].style.backgroundColor;    
         aplicarAnimacion(elementos.cuadrados[i], "visibilizar");    
     }
@@ -267,13 +268,13 @@ function mostrarBotonesDificultad()
 {
     dificultades.forEach(d =>
     {
-        document.getElementById(d.idBtn).style.visibility = "visible";
+        cambiarVisibilidadElemento(document.getElementById(d.idBtn), "visible");
     });
 }
 
 function mostrarReglas()
 {
-    elementos.reglas.style.display = "block";
+    setDisplay(elementos.reglas);
 }
 
 function ocultarBotonesDificultad(dificultadElegida)
@@ -282,7 +283,7 @@ function ocultarBotonesDificultad(dificultadElegida)
     {
         if(dificultades[i].nombre !== dificultadElegida)
         {
-            document.getElementById(dificultades[i].idBtn).style.visibility = "hidden";
+            cambiarVisibilidadElemento(document.getElementById(dificultades[i].idBtn), "hidden");            
         }
     }
 }
@@ -291,7 +292,7 @@ function ocultarCuadrados()
 {
     for(let i=0; i<elementos.cuadrados.length; i++)
     {
-        ocultarElemento(elementos.cuadrados[i]);
+        setDisplay(elementos.cuadrados[i], "none");
     }
 }
 
@@ -301,9 +302,9 @@ function mostrarCuadrados(cantidad)
 
     for(let i=0; i<cantidad; i++)
     {
-        elementos.cuadrados[i].style.display = "flex";
+        setDisplay(elementos.cuadrados[i], "flex");        
         aplicarAnimacion(elementos.cuadrados[i], "visibilizar");
-        elementos.cuadrados[i].style.visibility = "visible";        
+        cambiarVisibilidadElemento(elementos.cuadrados[i], "visible");            
     }
 }
 
@@ -386,8 +387,8 @@ function desaparecerCuadrado(indexCuadrado)
     aplicarAnimacion(elementos.cuadrados[indexCuadrado], "expandir");
 
     setTimeout(()=>
-    {    
-        elementos.cuadrados[indexCuadrado].style.visibility = "hidden";
+    {   
+        cambiarVisibilidadElemento(elementos.cuadrados[indexCuadrado], "hidden");
     }, 500);
 }
 
@@ -413,8 +414,14 @@ function registarErrorJugador(index)
     }, 500);
 }
 
-function ocultarElemento(elemento)
+
+
+function cambiarVisibilidadElemento(elemento, estado)
 {
-    elemento.style.display = "none";
+    elemento.style.visibility = estado;
 }
 
+function setDisplay(elemento, display = "block")  // por default su valor es "block"
+{
+    elemento.style.display = display;
+}
