@@ -1,54 +1,13 @@
-const dificultades =
-[
-    {
-        nombre: "easy",
-        idBtn: "btn-easy",
-        tiempo: 15,
-        cantidadCuadrados: 3,
-        erroresPermitidos: 1,
-    },
-    {
-        nombre: "hard",
-        idBtn: "btn-hard",
-        tiempo: 10,
-        cantidadCuadrados: 6,
-        erroresPermitidos: 4,
-    }
-]
-
-const estadoJuego =
+import { dificultades } from "./dificultades.js";
+import { elementos } from "./elementos.js";
+import { estadoJuego } from "./estado.js";
+import { fx } from "./fx.js";
+import
 {
-    iniciado: false,
-    dificultad: null,
-    config: null,
-    indiceGanador: -1,
-    rondaFinalizada: false,
-    contadorRondasGanadas: 0,
-    contadorErrores: 0,
-    timeoutReinicio: null,
-}
-
-const elementos =                       // elementos agrupados para un código más prolijo
-{
-    cuadrados: Array.from(document.querySelectorAll(".square")),   // selecciona los cuadrados y los guarda en una nodelist que después transforma en array           
-    reglas: document.getElementById("reglas"),                     // reglas del juego
-    btnEasy: document.getElementById("btn-easy"),
-    btnHard: document.getElementById("btn-hard"),
-    btnPlay: document.getElementById("btn-play"),
-    mensaje: document.getElementById("mensaje"),
-    containerCuadrados: document.getElementById("container-squares"),
-    containerRecompensa: document.getElementById("container-recompensa"),
-    colorGanador: document.getElementById("colorGanador"),          // color que debe escoger el usuario para ganar
-}
-
-const fx =
-{
-    victoria: new Audio("./src/rat-dance-song.mp3"),
-    correct: new Audio("./src/correct.mp3"),
-    error: new Audio("./src/error.mp3"),
-    gameOver: new Audio("./src/game-over.mp3"),
-    start: new Audio("./src/start.mp3"),
-}
+    setDisplay, cambiarVisibilidadElemento, modificarTextContent,
+    aplicarAnimacion, removerAnimaciones,
+    generarEnteroAleatorio, generarColorRandom
+} from "./utils.js";
 
 
 dificultades.forEach(dificultad =>                   // Asigna a cada btn de dificultad un evento (que configurará el juego según la dificultad elegida)
@@ -59,7 +18,7 @@ dificultades.forEach(dificultad =>                   // Asigna a cada btn de dif
         elementos.btnPlay.classList.remove("btn-desactivado");
 
         setDisplay(elementos.reglas, "none");
-        ocultarCuadrados();
+        ocultarContainerCuadrados();
         asignarColores(dificultad.cantidadCuadrados);
         mostrarCuadrados(dificultad.cantidadCuadrados);
         reactivarBtnsDificultad();
@@ -92,7 +51,7 @@ elementos.cuadrados.forEach((cuadrado, index) =>
             {                                                
                 registrarRondaGanada(index);                
 
-                if(estadoJuego.contadorRondasGanadas == 3)
+                if(estadoJuego.contadorRondasGanadas == 3)  // rondas necesarias para la victoria del juego
                 {                                                                                
                     mostrarRecompensa();
                 }
@@ -116,7 +75,11 @@ elementos.cuadrados.forEach((cuadrado, index) =>
     });    
 });
 
-
+/**
+ * Inicializa la partida según la configuración de dificultad.
+ * Reproduce sonido de inicio, anima los cuadrados y prepara la interfaz.
+ * @param {Object} config - Objeto de configuración con datos de la dificultad.
+ */
 function iniciarJuego(config)
 {
     estadoJuego.iniciado = true;   
@@ -130,11 +93,15 @@ function iniciarJuego(config)
         
         ocultarBotonesDificultad(config.nombre);
         desactivarBtn(config.idBtn);
-        mostrarRgb(config.cantidadCuadrados);
-        
+        mostrarRgb(config.cantidadCuadrados);        
         modificarTextContent(elementos.btnPlay, "BACK");
 }
 
+
+/**
+ * Resetea por completo el juego.
+ * Limpia estado, oculta recompensa, reinicia botones y elimina timeouts activos.
+ */
 function reiniciarJuego()
 {
     reiniciarRonda();               
@@ -144,7 +111,6 @@ function reiniciarJuego()
     estadoJuego.contadorRondasGanadas = 0;
     elementos.btnPlay.classList.add("btn-desactivado");
     setDisplay(elementos.containerCuadrados, "flex");    
-    
     setDisplay(elementos.containerRecompensa, "none");
     
     fx.victoria.pause();
@@ -160,9 +126,13 @@ function reiniciarJuego()
         clearTimeout(estadoJuego.timeoutReinicio);
         estadoJuego.timeoutReinicio = null;
     }
-
 }
 
+
+/**
+ * Finaliza el juego tras superar los errores permitidos.
+ * Reproduce sonido de game over y muestra feedback visual.
+ */
 function finalizarJuego()
 {
     fx.gameOver.play();
@@ -170,18 +140,22 @@ function finalizarJuego()
     estadoJuego.contadorRondasGanadas = 0;
     
     modificarTextContent(elementos.mensaje, "Game over");
-    resetearAnimaciones([elementos.mensaje], ["expandir","sacudir"]);
+    removerAnimaciones([elementos.mensaje], ["expandir","sacudir"]);
     aplicarAnimacion(elementos.mensaje, "sacudir");
 }
 
 
+/**
+ * Reinicia una ronda individual sin alterar el progreso total.
+ * Limpia colores, oculta cuadrados y resetea mensaje.
+ */
 function reiniciarRonda()
 {
     estadoJuego.indiceGanador = -1;
     estadoJuego.contadorErrores = 0;
     estadoJuego.rondaFinalizada = false;
 
-    ocultarCuadrados();
+    ocultarContainerCuadrados();
     limpiarColores();
     limpiarColorRgb()
 
@@ -189,6 +163,11 @@ function reiniciarRonda()
     elementos.mensaje.style.color = "black";
 }
 
+
+/**
+ * Muestra la recompensa final si se alcanzó el número de rondas ganadas.
+ * Aplica animación visual y reproduce audio en loop.
+ */
 function mostrarRecompensa()
 {
     fx.victoria.play();
@@ -196,12 +175,21 @@ function mostrarRecompensa()
     
     setTimeout(()=>
     {
-        setDisplay(elementos.containerCuadrados, "none");
-        setDisplay(elementos.containerRecompensa);                     
-        aplicarAnimacion(elementos.containerRecompensa, "visibilizar");
+        if(estadoJuego.iniciado) // valida que no se haya salido del juego para mostrar la animación
+        {
+            setDisplay(elementos.containerCuadrados, "none");
+            setDisplay(elementos.containerRecompensa);                     
+            aplicarAnimacion(elementos.containerRecompensa, "visibilizar");
+        }
+        
     }, 2300);
 }
 
+
+/**
+ * Inicia una nueva ronda después de un pequeño delay.
+ * Reasigna colores, actualiza cuadrados y presenta nuevo RGB objetivo.
+ */
 function empezarRondaNueva()
 {
     estadoJuego.timeoutReinicio = setTimeout(()=>
@@ -218,12 +206,19 @@ function empezarRondaNueva()
     }, 2000);
 }
 
+
+/**
+ * Registra una ronda ganada por el jugador.
+ * Muestra retroalimentación visual, pinta todos los cuadrados del color correcto,
+ * actualiza el contador de victorias y bloquea interacción temporal.
+ * @param {number} indiceGanador - Índice del cuadrado correcto.
+ */
 function registrarRondaGanada(indiceGanador)
 {
     fx.correct.play();
     estadoJuego.rondaFinalizada = true;     // impide spamear los cuadrados hasta que se muestren los nuevos
 
-    resetearAnimaciones(elementos.cuadrados, ["expandir", "visibilizar"]);
+    removerAnimaciones(elementos.cuadrados, ["expandir", "visibilizar"]);
 
     for(let i=0; i<estadoJuego.config.cantidadCuadrados; i++)
     {
@@ -234,169 +229,19 @@ function registrarRondaGanada(indiceGanador)
 
     elementos.mensaje.style.color = "green";
     modificarTextContent(elementos.mensaje, "Well done!");
-    resetearAnimaciones([elementos.mensaje], ["expandir", "sacudir"]);
+    removerAnimaciones([elementos.mensaje], ["expandir", "sacudir"]);
     aplicarAnimacion(elementos.mensaje, "expandir");
 
     estadoJuego.contadorRondasGanadas++;
 }
 
 
-
-
-
-
-function desactivarBtn(idBtn)
-{
-    const btnSeleccionado = document.getElementById(idBtn);
-
-    btnSeleccionado.disabled = true;
-    btnSeleccionado.classList.add("btn-desactivado");
-}
-
-function reactivarBtnsDificultad()
-{
-    dificultades.forEach(dificultad =>
-    {
-        const boton = document.getElementById(dificultad.idBtn);
-        boton.disabled = false;
-        boton.classList.remove("btn-desactivado");
-    });
-}
-
-
-function mostrarBotonesDificultad()
-{
-    dificultades.forEach(d =>
-    {
-        cambiarVisibilidadElemento(document.getElementById(d.idBtn), "visible");
-    });
-}
-
-function mostrarReglas()
-{
-    setDisplay(elementos.reglas);
-}
-
-function ocultarBotonesDificultad(dificultadElegida)
-{
-    for(let i=0; i < dificultades.length; i++)
-    {
-        if(dificultades[i].nombre !== dificultadElegida)
-        {
-            cambiarVisibilidadElemento(document.getElementById(dificultades[i].idBtn), "hidden");            
-        }
-    }
-}
-
-function ocultarCuadrados()
-{
-    for(let i=0; i<elementos.cuadrados.length; i++)
-    {
-        setDisplay(elementos.cuadrados[i], "none");
-    }
-}
-
-function mostrarCuadrados(cantidad)
-{
-    resetearAnimaciones(elementos.cuadrados, ["expandir", "visibilizar"]);
-
-    for(let i=0; i<cantidad; i++)
-    {
-        setDisplay(elementos.cuadrados[i], "flex");        
-        aplicarAnimacion(elementos.cuadrados[i], "visibilizar");
-        cambiarVisibilidadElemento(elementos.cuadrados[i], "visible");            
-    }
-}
-
-function generarEnteroAleatorio(minimo, maximo)
-{
-    return  Math.floor(Math.random() * (maximo - minimo + 1) + minimo);
-}
-
-function generarColorRandom()
-{
-    const r = generarEnteroAleatorio(0, 255);
-    const g = generarEnteroAleatorio(0, 255);
-    const b = generarEnteroAleatorio(0, 255);
-    
-    return `rgb(${r}, ${g}, ${b})`;     
-}
-
-function asignarColores(cantidad)
-{
-    for(let i=0; i<cantidad; i++)
-    {
-        elementos.cuadrados[i].style.backgroundColor = generarColorRandom();
-    }
-}
-
-function mostrarRgb(cantidad)
-{
-    let colorGanador = seleccionarColorGanador(cantidad);
-    
-    modificarTextContent(elementos.colorGanador, colorGanador);
-}
-
-function limpiarColorRgb()
-{
-    modificarTextContent(elementos.colorGanador, "RGB()");
-}
-
-function limpiarColores()
-{
-    elementos.cuadrados.forEach(cuadrado =>
-    {
-        cuadrado.style.backgroundColor = "";
-    });
-}
-
-function aplicarAnimacion(elemento, animacion)
-{
-    elemento.classList.remove(animacion);
-    elemento.offsetWidth;
-    elemento.classList.add(animacion);
-}
-
-function resetearAnimaciones(elementos, animaciones)
-{
-    elementos.forEach(element =>
-    {
-        animaciones.forEach(animacion =>
-        {
-            element.classList.remove(animacion);
-        });
-
-        element.offsetWidth; // Forzamos reflow para garantizar que el DOM registre los cambios
-    });
-}
-
-function seleccionarColorGanador(cantidadCuadrados)
-{
-    let index = generarEnteroAleatorio(0, cantidadCuadrados-1);
-    let colorRgb = elementos.cuadrados[index].style.backgroundColor;
-    
-    estadoJuego.indiceGanador = index;    // guarda el indice ganador en el objeto global
-    
-    return colorRgb;
-}
-
-
-
-function desaparecerCuadrado(indexCuadrado)
-{
-    aplicarAnimacion(elementos.cuadrados[indexCuadrado], "expandir");
-
-    setTimeout(()=>
-    {   
-        cambiarVisibilidadElemento(elementos.cuadrados[indexCuadrado], "hidden");
-    }, 500);
-}
-
-function modificarTextContent(elemento, texto)
-{
-    elemento.textContent = texto;
-}
-
+/**
+ * Registra un error cuando el jugador hace clic en un cuadrado incorrecto.
+ * Reproduce sonido, aplica animaciones, incrementa contador de errores
+ * y bloquea temporalmente la interacción para evitar spam.
+ * @param {number} index - Índice del cuadrado clickeado.
+ */
 function registarErrorJugador(index)
 {
     fx.error.play();
@@ -415,13 +260,171 @@ function registarErrorJugador(index)
 }
 
 
-
-function cambiarVisibilidadElemento(elemento, estado)
+/**
+ * Desactiva un botón de dificultad mediante su ID.
+ * @param {string} idBtn - ID del botón a desactivar.
+ */
+function desactivarBtn(idBtn)
 {
-    elemento.style.visibility = estado;
+    const btnSeleccionado = document.getElementById(idBtn);
+
+    btnSeleccionado.disabled = true;
+    btnSeleccionado.classList.add("btn-desactivado");
 }
 
-function setDisplay(elemento, display = "block")  // por default su valor es "block"
+
+/**
+ * Reactiva todos los botones de dificultad disponibles.
+ */
+function reactivarBtnsDificultad()
 {
-    elemento.style.display = display;
+    dificultades.forEach(dificultad =>
+    {
+        const boton = document.getElementById(dificultad.idBtn);
+        boton.disabled = false;
+        boton.classList.remove("btn-desactivado");
+    });
+}
+
+
+/**
+ * Muestra todos los botones de dificultad en la interfaz.
+ */
+function mostrarBotonesDificultad()
+{
+    dificultades.forEach(d =>
+    {
+        cambiarVisibilidadElemento(document.getElementById(d.idBtn), "visible");
+    });
+}
+
+
+/**
+ * Muestra el bloque de reglas en pantalla.
+ */
+function mostrarReglas()
+{
+    setDisplay(elementos.reglas);
+}
+
+
+/**
+ * Oculta los botones de dificultad que no coincidan con la dificultad elegida.
+ * @param {string} dificultadElegida - Nombre de la dificultad seleccionada.
+ */
+function ocultarBotonesDificultad(dificultadElegida)
+{
+    for(let i=0; i < dificultades.length; i++)
+    {
+        if(dificultades[i].nombre !== dificultadElegida)
+        {
+            cambiarVisibilidadElemento(document.getElementById(dificultades[i].idBtn), "hidden");            
+        }
+    }
+}
+
+
+/**
+ * Aplica animación de rebote a un cuadrado y luego lo oculta.
+ * @param {number} indexCuadrado - Índice del cuadrado a ocultar.
+ */
+function desaparecerCuadrado(indexCuadrado)
+{
+    aplicarAnimacion(elementos.cuadrados[indexCuadrado], "expandir");
+
+    setTimeout(()=>
+    {   
+        cambiarVisibilidadElemento(elementos.cuadrados[indexCuadrado], "hidden");
+    }, 500);
+}
+
+/**
+ * Oculta todos los cuadrados del contenedor principal.
+ */
+function ocultarContainerCuadrados()
+{
+    for(let i=0; i<elementos.cuadrados.length; i++)
+    {
+        setDisplay(elementos.cuadrados[i], "none");
+    }
+}
+
+
+/**
+ * Muestra la cantidad de cuadrados especificada con animación y visibilidad.
+ * @param {number} cantidad - Cantidad de cuadrados a mostrar.
+ */
+function mostrarCuadrados(cantidad)
+{
+    removerAnimaciones(elementos.cuadrados, ["expandir", "visibilizar"]);
+
+    for(let i=0; i<cantidad; i++)
+    {
+        setDisplay(elementos.cuadrados[i], "flex");        
+        aplicarAnimacion(elementos.cuadrados[i], "visibilizar");
+        cambiarVisibilidadElemento(elementos.cuadrados[i], "visible");            
+    }
+}
+
+
+/**
+ * Asigna colores aleatorios a los cuadrados visibles.
+ * @param {number} cantidad - Cantidad de cuadrados a colorear.
+ */
+function asignarColores(cantidad)
+{
+    for(let i=0; i<cantidad; i++)
+    {
+        elementos.cuadrados[i].style.backgroundColor = generarColorRandom();
+    }
+}
+
+
+/**
+ * Selecciona aleatoriamente uno de los cuadrados como el ganador.
+ * Guarda el índice en el estado global y devuelve su color.
+ * @param {number} cantidadCuadrados - Número total de cuadrados visibles.
+ * @returns {string} Color RGB del cuadrado ganador.
+ */
+function seleccionarColorGanador(cantidadCuadrados)
+{
+    let index = generarEnteroAleatorio(0, cantidadCuadrados-1);
+    let colorRgb = elementos.cuadrados[index].style.backgroundColor;
+    
+    estadoJuego.indiceGanador = index;    // guarda el indice ganador en el objeto global
+    
+    return colorRgb;
+}
+
+
+/**
+ * Elimina el color de fondo de todos los cuadrados.
+ */
+function limpiarColores()
+{
+    elementos.cuadrados.forEach(cuadrado =>
+    {
+        cuadrado.style.backgroundColor = "";
+    });
+}
+
+
+/**
+ * Limpia el texto del color RGB mostrado.
+ */
+function limpiarColorRgb()
+{
+    modificarTextContent(elementos.colorGanador, "RGB()");
+}
+
+
+/**
+ * Muestra el color RGB objetivo al jugador y lo actualiza en pantalla.
+ * @param {number} cantidad - Cantidad de cuadrados entre los que se elige el ganador.
+ */
+function mostrarRgb(cantidad)
+{
+    let colorGanador = seleccionarColorGanador(cantidad);
+    
+    modificarTextContent(elementos.colorGanador, colorGanador);
 }
